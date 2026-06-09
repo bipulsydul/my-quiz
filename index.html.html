@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi level Quiz Game</title>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+
+:root {
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Hind Siliguri', 'Segoe UI', sans-serif; 
+}
+
+body { 
+    background: var(--bg-gradient); 
+    color: var(--text-main); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    padding: 20px; 
+    overflow-x: hidden; 
+}
+
+.container { 
+    width: 100%; 
+    max-width: 650px; 
+    position: relative; 
+}
+
+.card-view { 
+    background: var(--card-bg); 
+    border: 1px solid var(--card-border); 
+    padding: 40px 35px; 
+    border-radius: 28px; 
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
+    text-align: center; 
+    position: relative; 
+    animation: fadeIn 0.4s ease-out; 
+}
+
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(15px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+.close-btn, .home-btn { 
+    position: absolute; 
+    top: 20px; 
+    right: 20px; 
+    background: #f1f5f9; 
+    border: none; 
+    width: 38px; 
+    height: 38px; 
+    border-radius: 50%; 
+    cursor: pointer; 
+    font-size: 16px;
+    font-weight: bold; 
+    color: var(--text-muted);
+    transition: 0.2s;
+}
+.close-btn:hover, .home-btn:hover { background: #e2e8f0; color: var(--text-main); }
+
+.home-btn { 
+    right: auto; 
+    left: 20px; 
+    width: auto; 
+    padding: 0 16px; 
+    border-radius: 12px; 
+}
+
+.icon-header { font-size: 60px; margin-bottom: 12px; }
+h2 { font-size: 28px; margin-bottom: 8px; color: #1e293b; }
+.subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 30px; }
+.highlight-text { color: var(--accent); font-weight: 700; }
+.badge { background: var(--accent); color: white; padding: 4px 14px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+
+.input-group { position: relative; margin-bottom: 25px; }
+.input-group input { 
+    width: 100%; padding: 18px; background: #f8fafc; border: 2px solid var(--card-border); 
+    border-radius: 16px; color: var(--text-main); font-size: 18px; outline: none; transition: 0.3s; 
+}
+.input-group input:focus { border-color: var(--accent); background: #ffffff; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); }
+.input-group label { position: absolute; left: 18px; top: 18px; color: var(--text-muted); font-size: 16px; transition: 0.3s; pointer-events: none; }
+.input-group input:focus ~ label, .input-group input:not(:placeholder-shown) ~ label { top: -11px; left: 14px; font-size: 13px; background: #ffffff; padding: 0 8px; color: var(--accent); font-weight: 600; }
+
+.btn-primary { 
+    width: 100%; padding: 18px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); 
+    color: #fff; border: none; border-radius: 16px; font-size: 19px; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); 
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(99, 102, 241, 0.5); }
+
+.player-info-card { background: #f8fafc; border: 2px solid var(--card-border); padding: 16px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 16px; }
+.select-wrapper { text-align: left; margin-bottom: 20px; }
+.section-title { display: block; text-align: left; font-weight: bold; margin-bottom: 10px; font-size: 16px; color: var(--text-main); }
+select { width: 100%; padding: 14px; border-radius: 14px; border: 2px solid var(--card-border); background: #f8fafc; outline: none; font-size: 16px; font-weight: 600; }
+
+.grid-cats, .options-grid { display: flex; flex-direction: column; gap: 12px; }
+.btn-cat, .option-btn { padding: 18px; background: #f8fafc; border: 2px solid var(--card-border); border-radius: 16px; color: var(--text-main); text-align: left; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.btn-cat:hover, .option-btn:hover { background: #f1f5f9; transform: translateX(6px); border-color: var(--accent); }
+.option-btn.selected { border-color: var(--accent); background: #e0e7ff; color: var(--accent); }
+
+.option-btn.correct-ans { background: #d1fae5 !important; border-color: var(--success) !important; color: #065f46 !important; }
+.option-btn.wrong-ans { background: #fee2e2 !important; border-color: var(--danger) !important; color: #991b1b !important; }
+
+.leaderboard-box { margin-top: 25px; text-align: left; background: #f8fafc; border: 2px solid var(--card-border); padding: 20px; border-radius: 16px; }
+.leaderboard-list { margin-top: 10px; font-size: 16px; list-style: none; }
+.leaderboard-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+
+.game-instructions { margin-top: 20px; text-align: left; font-size: 14px; color: var(--text-muted); background: #fffbeb; padding: 15px; border-radius: 16px; border-left: 5px solid #f59e0b; }
+.game-instructions ul { margin-left: 20px; margin-top: 8px; }
+.game-instructions li { margin-bottom: 4px; }
+
+.timer-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+.timer-progress { height: 100%; background: #f59e0b; width: 100%; transition: width 1s linear; }
+
+.status-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.meta-item { background: #f1f5f9; padding: 12px 20px; border-radius: 12px; font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+
+.question-text { font-size: 26px; line-height: 1.6; font-weight: bold; text-align: left; margin-bottom: 30px; color: #1e293b; }
+
+.timer-clock {
+    font-size: 28px !important; 
+    font-weight: 800;
+    color: #dc2626; 
+    font-family: 'Courier New', Courier, monospace; 
+    background: #fef2f2; 
+    border: 2px solid #fee2e2;
+    padding: 10px 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.1);
+    animation: pulse 1s infinite alternate; 
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.04); }
+}
+
+.score-card { background: #f8fafc; border: 2px solid var(--card-border); padding: 25px; border-radius: 16px; margin: 25px 0; }
+.big-score { font-size: 46px; font-weight: 800; color: var(--accent); margin-top: 10px; }
+.feedback-toast { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 35px; border-radius: 50px; font-size: 16px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 1000; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
+.feedback-toast.show { opacity: 1; top: 20px; }
+
+.cartoon-actor, .gift-box { font-size: 70px; margin-bottom: 12px; animation: bounce 0.6s infinite alternate ease-in-out; }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-12px); } }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div id="feedback" class="feedback-toast">✨ গুড! ✨</div>
+
+    <div id="login-screen" class="card-view">
+        <div class="icon-header">🎯</div>
+        <h2>কুইজ চ্যালেঞ্জ</h2>
+        <p class="subtitle">আপনার মেধা যাচাইয়ের নতুন প্ল্যাটফর্ম</p>
+        <div class="input-group">
+            <input type="text" id="username" placeholder=" " required>
+            <label>আপনার নাম লিখুন</label>
+        </div>
+        <div class="input-group">
+            <input type="tel" id="mobile" placeholder=" " required>
+            <label>মোবাইল নম্বর (১১ ডিজিট)</label>
+        </div>
+        <div class="input-group">
+            <input type="email" id="userEmail" placeholder=" " required>
+            <label>আপনার ইমেইল (বাধ্যতামূলক)</label>
+        </div>
+        <button class="btn-primary" id="loginBtn" onclick="handleLogin()">লগইন করুন</button>
+    </div>
+
+    <div id="category-screen" class="card-view hidden">
+        <button class="close-btn" onclick="closeGame()">✕</button>
+        <h2>ড্যাশবোর্ড</h2>
+        <div class="player-info-card">
+            <div>👋 খেলোয়াড়: <strong id="player-name" class="highlight-text"></strong></div>
+            <div>🏆 আনলক লেবেল: <span id="unlocked-level-lbl" class="badge">1</span></div>
+        </div>
+        
+        <div class="select-wrapper">
+            <label class="section-title">লেবেল সিলেক্ট করুন</label>
+            <select id="level-select" onchange="updateSelectedLevel()"></select>
+        </div>
+        
+        <label class="section-title" style="margin-top: 15px;">বিষয় নির্বাচন করুন</label>
+        <div class="grid-cats">
+            <button class="btn-cat" onclick="selectCategory('science')">🔬 বিজ্ঞান ও প্রযুক্তি</button>
+            <button class="btn-cat" onclick="selectCategory('history')">📜 ইতিহাস ও ঐতিহ্য</button>
+            <button class="btn-cat" onclick="selectCategory('sports')">⚽ খেলাধুলা</button>
+        </div>
+
+        <div class="leaderboard-box">
+            <h3>🏆 আজকের শীর্ষ ৩ বিজয়ী</h3>
+            <ul id="top-players-list" class="leaderboard-list">
+                <li>ডেটা লোড হচ্ছে...</li>
+            </ul>
+        </div>
+
+        <div class="game-instructions">
+            <h4>💡 গেম খেলার নিয়মাবলী:</h4>
+            <ul>
+                <li>প্রতিটি প্রশ্নে ৩টি অপশন থাকবে এবং সময় ১০ সেকেন্ড।</li>
+                <li>নির্ধারিত ১০ সেকেন্ডের মধ্যে উত্তর না দিলে স্বয়ংক্রিয়ভাবে পরের প্রশ্নে চলে যাবে।</li>
+                <li>চলতি লেবেলে ২০টি প্রশ্নের **সবকটির (২০/২০)** সঠিক উত্তর দিলে পরবর্তী লেবেল আনলক হবে।</li>
+                <li>লেবেল আনলক না হওয়া পর্যন্ত পরবর্তী লেবেলে খেলা যাবে না।</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="start-screen" class="card-view hidden">
+        <button class="home-btn" onclick="backToMenu()">🏠 হোম</button>
+        <div class="icon-header">🚀</div>
+        <h2>কুইজটি শুরু করতে প্রস্তুত?</h2>
+        <p id="selected-cat-name" class="highlight-text" style="font-size: 20px; margin: 20px 0; font-weight: bold;"></p>
+        <button class="btn-primary" onclick="startQuiz()">গেম স্টার্ট করুন 🎮</button>
+    </div>
+
+    <div id="game-screen" class="card-view hidden">
+        <button class="close-btn" onclick="closeGame()">✕</button>
+        <div class="timer-bar"><div id="timer-progress" class="timer-progress"></div></div>
+        <div class="status-meta">
+            <div class="meta-item">🌟 Level <span id="current-level-num">1</span></div>
+            <div class="meta-item">🧩 প্রশ্ন: <span id="q-count">1</span>/20</div>
+            <div id="timer-box" class="meta-item clock timer-clock">⏱️ <span id="timer-text">10</span>s</div>
+        </div>
+        <div id="question-container" class="question-text">এখানে প্রশ্ন আসবে?</div>
+        <div id="options-container" class="options-grid"></div>
+        <button id="submit-btn" class="btn-primary main-submit" style="margin-top: 25px;" onclick="submitAnswer()">উত্তর জমা দিন</button>
+    </div>
+
+    <div id="result-screen" class="card-view hidden">
+        <h2>কুইজ সমাপ্ত</h2>
+        <div id="animation-zone"></div>
+        <h3 id="result-text" style="margin: 20px 0; font-size: 20px; line-height: 1.5;"></h3>
+        <div class="score-card">
+            <p style="font-size: 18px; color: var(--text-muted);">আপনার মোট স্কোর</p>
+            <div class="big-score"><span id="score-text">0</span> / 20</div>
+        </div>
+        <button class="btn-primary" onclick="backToMenu()">ড্যাশবোর্ডে ফিরে যান 🔄</button>
+    </div>
+</div>
+
+<script> 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYTcjU-43a-8ztzSXI1_q01eKCB4mFcBKzP93ryTN3QZzuE4-lknwQ5uDUoTovQEYLfg/exec"; 
+
+let player = { name: '', mobile: '', email: '', unlockedLevel: 1, maxLevel: 3 }; 
+let currentCategory = '';
+let selectedLevel = 1; 
+let currentQuestions = [];
+let currentQIndex = 0;
+let score = 0;
+let timerInterval = null;
+let timeLeft = 10;
+let selectedOptionIdx = null;
+
+// শুরুতে কোয়েশ্চেন ব্যাংক সম্পূর্ণ খালি থাকবে, গুগল শিট থেকে লোড হবে
+let questionBank = {
+    science: { 1: [], 2: [], 3: [] },
+    history: { 1: [], 2: [], 3: [] },
+    sports: { 1: [], 2: [], 3: [] }
+};
+
+// গ্লোবাল অনলাইন ওপেন সোর্স সাউন্ড ইফেক্টস
+const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-84.wav');
+const wrongSound = new Audio('https://assets.mixkit.co/active_storage/sfx/959/959-84.wav');
+const victorySound = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-84.wav');
+const gameoverSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2555/2555-84.wav');
+
+// --- গুগল শিট থেকে প্রশ্ন নিয়ে আসার ডাইনামিক ফাংশন ---
+async function fetchQuestionsFromSheet() {
+    try {
+        console.log("গুগল শিট থেকে ডেটা আনা হচ্ছে...");
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        const data = await response.json();
+        
+        if(data && (data.science || data.history || data.sports)) {
+            questionBank = data;
+            console.log("প্রশ্ন ব্যাংক সফলভাবে ডাইনামিক আপডেট হয়েছে!", questionBank);
+        }
+    } catch (error) {
+        console.error("প্রশ্ন ব্যাকগ্রাউন্ডে লোড করার সময় সমস্যা হয়েছে:", error);
+    }
+}
+
+// পেজ লোড হবার সাথে সাথেই ব্যাকগ্রাউন্ডে প্রশ্ন আনা শুরু করবে
+window.onload = () => {
+    fetchQuestionsFromSheet();
+};
+
+function renderLevelDropdown() {
+    const select = document.getElementById("level-select");
+    select.innerHTML = "";
+    for(let i = 1; i <= player.maxLevel; i++) {
+        let isLocked = i > player.unlockedLevel ? "disabled" : "";
+        let lockSymbol = i > player.unlockedLevel ? "🔒 " : "🔓 ";
+        select.innerHTML += `<option value="${i}" ${isLocked}>${lockSymbol} লেবেল ${i}</option>`;
+    }
+    select.value = selectedLevel;
+}
+
+async function handleLogin() {
+    const nameInput = document.getElementById("username").value.trim();
+    const phoneInput = document.getElementById("mobile").value.trim();
+    const emailInput = document.getElementById("userEmail").value.trim();
+    const loginBtn = document.getElementById("loginBtn");
+
+    if (phoneInput === "" || emailInput === "") {
+        alert("মোবাইল নম্বর এবং ইমেইল আইডি দেওয়া বাধ্যতামূলক!");
+        return;
+    }
+
+    loginBtn.innerText = "প্রবেশ করা হচ্ছে...";
+    loginBtn.disabled = true;
+
+    // লগইন করার সময় প্রশ্ন যদি লোড হয়ে না থাকে, পুনরায় রিকোয়েস্ট করবে নিশ্চিত করার জন্য
+    await fetchQuestionsFromSheet();
+
+    try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ 
+                action: "login", // অ্যাকশন ট্র্যাক করার জন্য আলাদা কিওয়ার্ড
+                name: nameInput, 
+                phone: phoneInput, 
+                email: emailInput 
+            })
+        });
+
+        player.name = nameInput || "খেলোয়াড়";
+        player.mobile = phoneInput;
+        player.email = emailInput;
+
+        document.getElementById("player-name").innerText = player.name;
+        document.getElementById("unlocked-level-lbl").innerText = player.unlockedLevel;
+        
+        renderLevelDropdown();
+        switchScreen("login-screen", "category-screen");
+        loadTopPlayers(); 
+    } catch (error) {
+        console.error(error);
+        alert("কানেকশন ত্রুটি! সরাসরি ড্যাশবোর্ডে প্রবেশ করা হচ্ছে।");
+        player.name = nameInput || "খেলোয়াড়";
+        player.mobile = phoneInput;
+        player.email = emailInput;
+        document.getElementById("player-name").innerText = player.name;
+        renderLevelDropdown();
+        switchScreen("login-screen", "category-screen");
+        loadTopPlayers();
+    }
+}
+
+function updateSelectedLevel() {
+    selectedLevel = parseInt(document.getElementById("level-select").value);
+}
+
+function selectCategory(category) {
+    // যাচাই করা যে এই ক্যাটাগরি ও লেবেলে প্রশ্ন খালি কিনা
+    if (!questionBank[category] || !questionBank[category][selectedLevel] || questionBank[category][selectedLevel].length === 0) {
+        alert("দুঃখিত! এই লেবেলে গুগল শিট থেকে কোনো প্রশ্ন পাওয়া যায়নি। অন্য লেবেল বা ক্যাটাগরি খেলুন।");
+        return;
+    }
+    currentCategory = category;
+    const catNames = { science: "🔬 বিজ্ঞান ও প্রযুক্তি", history: "📜 ইতিহাস ও ঐতিহ্য", sports: "⚽ খেলাধুলা" };
+    document.getElementById("selected-cat-name").innerText = `${catNames[category]} (লেবেল ${selectedLevel})`;
+    switchScreen("category-screen", "start-screen");
+}
+
+function startQuiz() {
+    currentQuestions = questionBank[currentCategory][selectedLevel];
+    currentQIndex = 0;
+    score = 0;
+    switchScreen("start-screen", "game-screen");
+    loadQuestion();
+}
+
+function loadQuestion() {
+    selectedOptionIdx = null;
+    timeLeft = 10;
+    
+    document.getElementById("current-level-num").innerText = selectedLevel;
+    document.getElementById("q-count").innerText = currentQIndex + 1;
+    document.getElementById("timer-text").innerText = timeLeft;
+    document.getElementById("timer-progress").style.width = "100%";
+    document.getElementById("submit-btn").disabled = false;
+
+    const qData = currentQuestions[currentQIndex];
+    document.getElementById("question-container").innerText = qData.q;
+
+    const optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = "";
+    qData.ans.forEach((ansText, index) => {
+        optionsContainer.innerHTML += `
+            <button class="option-btn" onclick="selectOption(this, ${index})">${ansText}</button>
+        `;
+    });
+
+    startTimer();
+}
+
+function selectOption(btn, idx) {
+    const allBtns = document.querySelectorAll(".option-btn");
+    allBtns.forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selectedOptionIdx = idx;
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer-text").innerText = timeLeft;
+        document.getElementById("timer-progress").style.width = (timeLeft * 10) + "%";
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            try { wrongSound.play(); } catch(e){}
+            showToast("⏳ সময় শেষ!", "danger");
+            highlightAnswers();
+            setTimeout(nextQuestion, 1500);
+        }
+    }, 1000);
+}
+
+function submitAnswer() {
+    if (selectedOptionIdx === null) {
+        alert("দয়া করে একটি উত্তর সিলেক্ট করুন!");
+        return;
+    }
+    clearInterval(timerInterval);
+    document.getElementById("submit-btn").disabled = true;
+
+    const qData = currentQuestions[currentQIndex];
+    highlightAnswers();
+
+    if (selectedOptionIdx === qData.correct) {
+        score++;
+        try { correctSound.play(); } catch(e){}
+        showToast("✨ সঠিক উত্তর! ✨", "success");
+    } else {
+        try { wrongSound.play(); } catch(e){}
+        showToast("❌ ভুল উত্তর!", "danger");
+    }
+
+    setTimeout(nextQuestion, 1500);
+}
+
+function highlightAnswers() {
+    const qData = currentQuestions[currentQIndex];
+    const allBtns = document.querySelectorAll(".option-btn");
+    
+    allBtns.forEach((btn, index) => {
+        btn.disabled = true; 
+        if (index === qData.correct) {
+            btn.classList.add("correct-ans");
+        } else if (index === selectedOptionIdx) {
+            btn.classList.add("wrong-ans");
+        }
+    });
+}
+
+function nextQuestion() {
+    currentQIndex++;
+    // গুগল শিট থেকে সর্বোচ্চ যতগুলো প্রশ্ন আসবে ততগুলোই লুপ হবে (সর্বোচ্চ ২০)
+    let maxQuestionsAvailable = Math.min(20, currentQuestions.length);
+    if (currentQIndex < maxQuestionsAvailable) {
+        loadQuestion();
+    } else {
+        endQuiz();
+    }
+}
+
+function savePlayerDataAndScore() {
+    const dataToSend = {
+        action: "submitScore", // স্কোর সাবমিট করার নির্দিষ্ট ট্যাগ
+        name: player.name,
+        mobile: player.mobile,
+        email: player.email,
+        finalScore: score,
+        level: selectedLevel
+    };
+
+    fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(dataToSend)
+    })
+    .then(() => console.log("ডাটা গুগল শিটে সফলভাবে সাবমিট হয়েছে!"))
+    .catch(error => console.error("নেটওয়ার্ক এরর:", error));
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    switchScreen("game-screen", "result-screen");
+    
+    document.getElementById("score-text").innerText = score;
+    const animationZone = document.getElementById("animation-zone");
+    const resultText = document.getElementById("result-text");
+
+    savePlayerDataAndScore();
+
+    if (score === 20) {
+        animationZone.innerHTML = `<div class="cartoon-actor">🥳</div>`;
+        resultText.innerText = "🏆 অসাধারণ! আপনি নিখুঁত স্কোর করেছেন এবং পরবর্তী লেবেল আনলক করেছেন।";
+        try { victorySound.play(); } catch(e){}
+
+        if(selectedLevel === player.unlockedLevel && player.unlockedLevel < player.maxLevel) {
+            player.unlockedLevel++;
+            selectedLevel = player.unlockedLevel; 
+        }
+    } else {
+        animationZone.innerHTML = `<div class="gift-box">😢</div>`;
+        resultText.innerText = "দুঃখিত! পরবর্তী লেভেলে যেতে অবশ্যই ২০/২০ স্কোর প্রয়োজন। আবার চেষ্টা করুন।";
+        try { gameoverSound.play(); } catch(e){}
+    }
+    
+    document.getElementById("unlocked-level-lbl").innerText = player.unlockedLevel;
+    renderLevelDropdown();
+    loadTopPlayers();
+}
+
+function switchScreen(hideId, showId) {
+    document.getElementById(hideId).classList.add("hidden");
+    document.getElementById(showId).classList.remove("hidden");
+}
+
+function backToMenu() {
+    switchScreen("result-screen", "category-screen");
+    switchScreen("start-screen", "category-screen");
+}
+
+function closeGame() {
+    if(confirm("আপনি কি গেমটি বন্ধ করতে চান?")) {
+        location.reload();
+    }
+}
+
+function showToast(msg, type) {
+    const toast = document.getElementById("feedback");
+    toast.innerText = msg;
+    toast.style.background = type === "success" ? "var(--success)" : "var(--danger)";
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1200);
+}
+
+function loadTopPlayers() {
+    const listContainer = document.getElementById('top-players-list');
+    listContainer.innerHTML = "<li>লাইভ আপডেট হচ্ছে...</li>"; 
+    
+    fetch(GOOGLE_SCRIPT_URL, {
+        method: "GET",
+        mode: "cors"
+    })
+    .then(response => response.json())
+    .then(data => {
+        listContainer.innerHTML = ""; 
+        
+        // যদি শিটের অবজেক্টে ডেটা না থেকে সরাসরি লিস্ট না আসে
+        let topPlayers = Array.isArray(data) ? data : (data.topPlayers || []);
+        
+        if (!topPlayers || topPlayers.length === 0) {
+            listContainer.innerHTML = "<li>আজ এখন পর্যন্ত কোনো রেকর্ড নেই!</li>";
+            return;
+        }
+        
+        topPlayers.slice(0, 3).forEach((p, index) => {
+            const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
+            const li = document.createElement('li');
+            li.style.display = "flex";
+            li.style.justifyContent = "space-between";
+            li.style.padding = "8px 0";
+            li.style.borderBottom = "1px dashed #e2e8f0";
+            li.innerHTML = `<span>${medal} ${p.name}</span> <strong>${p.score || 0}</strong>`;
+            listContainer.appendChild(li);
+        });
+    })
+    .catch(error => {
+        console.error("লিডারবোর্ড লোড করতে সমস্যা:", error);
+        listContainer.innerHTML = "<li>লিডারবোর্ড লোড করা যায়নি!</li>";
+    });
+}
+</script>
+</body>
+</html>

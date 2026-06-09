@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রশ্ন ব্যাংক - ম্যানেজমেন্ট প্যানেল</title>
+    <style>
+        /* 🎯 গুগল ফন্ট ইমপোর্ট (ভুল অ্যাপস স্ক্রিপ্ট লিংকটি এখান থেকে সরানো হয়েছে) */
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+        
+        :root {
+            --bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --text: #f8fafc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 40px 20px; display: flex; justify-content: center; }
+        .panel-card { background: var(--card); border: 1px solid var(--border); padding: 35px; border-radius: 24px; max-width: 600px; width: 100%; backdrop-filter: blur(16px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        h2 { text-align: center; margin-bottom: 25px; background: linear-gradient(to right, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 600; }
+        select, input, textarea { width: 100%; padding: 14px; background: rgba(0,0,0,0.2); border: 2px solid var(--border); border-radius: 14px; color: #fff; font-size: 16px; outline: none; transition: 0.3s; }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+        select option { background: #1e1b4b; color: #fff; }
+        .btn-submit { width: 100%; padding: 16px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; border: none; border-radius: 14px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(99, 102, 241, 0.5); }
+        .status-msg { text-align: center; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="panel-card">
+    <h2>➕ নতুন প্রশ্ন যুক্ত করুন</h2>
+    <form id="question-form" onsubmit="submitQuestion(event)">
+        
+        <div class="form-group">
+            <label>বিষয় / ক্যাটাগরি</label>
+            <select id="category" required>
+                <option value="science">🔬 বিজ্ঞান ও প্রযুক্তি</option>
+                <option value="history">📜 ইতিহাস ও ঐতিহ্য</option>
+                <option value="sports">⚽ খেলাধুলা</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>লেবেল (Level)</label>
+            <select id="level" required>
+                <option value="1">লেবেল ১</option>
+                <option value="2">লেবেল ২</option>
+                <option value="3">লেবেল ৩</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>আপনার প্রশ্নটি লিখুন</label>
+            <textarea id="question" rows="3" placeholder="এখানে প্রশ্ন টাইপ করুন..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>অপশন ১</label>
+            <input type="text" id="opt0" placeholder="প্রথম অপশন" required>
+        </div>
+
+        <div class="form-group">
+            <label>অপশন ২</label>
+            <input type="text" id="opt1" placeholder="দ্বিতীয় অপশন" required>
+        </div>
+
+        <div class="form-group">
+            <label>অপশন ৩</label>
+            <input type="text" id="opt2" placeholder="তৃতীয় অপশন" required>
+        </div>
+
+        <div class="form-group">
+            <label>সঠিক উত্তর কোনটি?</label>
+            <select id="correctIndex" required>
+                <option value="0">অপশন ১ সঠিক</option>
+                <option value="1">অপশন ২ সঠিক</option>
+                <option value="2">অপশন ৩ সঠিক</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit" id="subBtn">গুগল শিটে যুক্ত করুন 🚀</button>
+        <div id="status" class="status-msg"></div>
+    </form>
+</div>
+
+<script>
+    // 🔗 আপনার গুগল অ্যাপস স্ক্রিপ্টের Web App URL
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYTcjU-43a-8ztzSXI1_q01eKCB4mFcBKzP93ryTN3QZzuE4-lknwQ5uDUoTovQEYLfg/exec"; 
+
+    function submitQuestion(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById("subBtn");
+        const status = document.getElementById("status");
+        
+        btn.innerText = "যুক্ত হচ্ছে...";
+        btn.disabled = true;
+        status.innerText = "";
+
+        // ডেটা অবজেক্ট তৈরি
+        const qData = {
+            action: "addQuestion", 
+            category: document.getElementById("category").value,
+            level: parseInt(document.getElementById("level").value),
+            question: document.getElementById("question").value.trim(),
+            options: [
+                document.getElementById("opt0").value.trim(),
+                document.getElementById("opt1").value.trim(),
+                document.getElementById("opt2").value.trim()
+            ],
+            correctIndex: parseInt(document.getElementById("correctIndex").value)
+        };
+
+        // 🛠️ গুগল অ্যাপস স্ক্রিপ্টে ডেটা পোস্ট করার সঠিক মেথড
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(qData)
+        })
+        .then(res => res.text())
+        .then(response => {
+            btn.innerText = "গুগল শিটে যুক্ত করুন 🚀";
+            btn.disabled = false;
+            status.style.color = "#10b981";
+            status.innerText = "✅ প্রশ্নটি সফলভাবে বিদ্যমান প্রশ্নের নিচে যুক্ত হয়েছে!";
+            document.getElementById("question-form").reset(); // ফর্ম সফলভাবে সাবমিট হলে ইনপুট খালি হবে
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            btn.innerText = "গুগল শিটে যুক্ত করুন 🚀";
+            btn.disabled = false;
+            status.style.color = "#ef4444";
+            status.innerText = "❌ ত্রুটি হয়েছে! আবার চেষ্টা করুন।";
+        });
+    }
+</script>
+</body>
+</html>
